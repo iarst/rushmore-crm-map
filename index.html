@@ -126,8 +126,8 @@
 </aside>
 
 <script>
-const KEY='rvl_crmmap_v3';
-const CANVAS_W=1390, CANVAS_H=1040;
+const KEY='rvl_crmmap_v4';
+const CANVAS_W=1410, CANVAS_H=1250;
 
 /* ---------- departments ---------- */
 const DEPTS={
@@ -137,17 +137,11 @@ const DEPTS={
   reports:{name:'Reports · Docs',color:'#d97706',bg:'rgba(217,119,6,.05)'},
   finance:{name:'Finance · Bookkeeping',color:'#059669',bg:'rgba(5,150,105,.06)'}
 };
-const ZONES=[
-  {dept:'intake',  x:70,  y:80,  w:330, h:185},
-  {dept:'dispatch',x:70,  y:300, w:330, h:560},
-  {dept:'field',   x:415, y:300, w:305, h:560},
-  {dept:'reports', x:735, y:300, w:320, h:710},
-  {dept:'finance', x:1075,y:445, w:300, h:250}
-];
+/* zones are computed dynamically from each department's member nodes */
 
 /* ---------- seed (reflects real project status, June 2026) ---------- */
 const SEED=[
-  {id:'estimate',dept:'intake',title:'Estimate from broker',kind:'input',x:100,y:120,w:270,h:120,
+  {id:'estimate',dept:'intake',title:'Estimate from broker',kind:'input',x:100,y:110,w:270,h:120,
    desc:'Broker estimate enters the system and is parsed into a job.',
    milestone:'Stand up the dedicated intake email + auto-forward rule.',
    data:['customer','addresses','volume','charges','inventory','pickup/delivery dates'],
@@ -157,7 +151,7 @@ const SEED=[
      {t:'AI extraction of estimate fields',s:'progress'},
      {t:'Self-check: totals sum, math, required fields',s:'planned'}
    ]},
-  {id:'dispatch',dept:'dispatch',title:'Dispatch pickup board',kind:'',x:100,y:345,w:275,h:125,
+  {id:'dispatch',dept:'dispatch',title:'Dispatch pickup board',kind:'',x:100,y:410,w:275,h:125,
    desc:'Office schedules pickups and assigns a foreman.',
    milestone:'Hand the job off to the Delivery board once pickup is done.',
    data:['jobs','foremen roster','pickup ETA windows'],
@@ -170,7 +164,7 @@ const SEED=[
      {t:'Short foreman link (#j=)',s:'done'},
      {t:'Highlight PGS / bulky / customer notes',s:'done'}
    ]},
-  {id:'foreman',dept:'field',title:"Foreman's account",kind:'',x:435,y:360,w:255,h:135,
+  {id:'foreman',dept:'field',title:"Foreman's account",kind:'',x:435,y:430,w:255,h:135,
    desc:'Foreman fills & signs the paperwork with the customer on site.',
    milestone:'Connect the signed BOL straight into the job-report step.',
    data:['BOL fields','signatures','GPS + timestamp'],
@@ -184,7 +178,7 @@ const SEED=[
      {t:'Confirm pickup window',s:'done'},
      {t:'Generate official CSI PDF',s:'done'}
    ]},
-  {id:'pickup',dept:'reports',title:'Pickup report',kind:'',x:755,y:345,w:265,h:145,
+  {id:'pickup',dept:'reports',title:'Pickup report',kind:'',x:755,y:415,w:265,h:145,
    desc:"Foreman's post-job report (the Google Form today); feeds the bookkeeper.",
    milestone:'Build the native in-app job report that replaces the Google Form.',
    data:['collected balance','expenses','receipts','photos','trucks/trips','job cf','blankets'],
@@ -205,7 +199,7 @@ const SEED=[
      {t:'Delays / issues / comments',s:'done'},
      {t:'Feed totals to Job $',s:'planned'}
    ]},
-  {id:'jobmoney',dept:'finance',title:'Job $',kind:'money',x:1095,y:515,w:255,h:120,
+  {id:'jobmoney',dept:'finance',title:'Job $',kind:'money',x:1095,y:560,w:255,h:120,
    desc:'Bookkeeper turns each job report into payouts, expenses & profit.',
    milestone:'Build the per-job payout + profit calculator for the bookkeeper.',
    data:['collected $','foreman payout','helper payouts','expenses','profit'],
@@ -221,7 +215,7 @@ const SEED=[
      {t:'Bookkeeper review + approve per job',s:'planned'},
      {t:'Export for payroll / accounting',s:'planned'}
    ]},
-  {id:'delivboard',dept:'dispatch',title:'Delivery board',kind:'',x:100,y:715,w:275,h:120,
+  {id:'delivboard',dept:'dispatch',title:'Delivery board',kind:'',x:100,y:770,w:275,h:120,
    desc:'Office schedules deliveries and assigns drivers.',
    milestone:'Clone the dispatch board for the delivery side + driver roster.',
    data:['deliveries','drivers roster'],
@@ -232,7 +226,7 @@ const SEED=[
      {t:'Assign driver from roster',s:'planned'},
      {t:'Delivery date / window',s:'planned'}
    ]},
-  {id:'driver',dept:'field',title:"Driver's account",kind:'',x:435,y:710,w:255,h:125,
+  {id:'driver',dept:'field',title:"Driver's account",kind:'',x:435,y:780,w:255,h:125,
    desc:'Driver completes delivery and signs with the customer.',
    milestone:'Clone the foreman account for drivers (delivery sign-off).',
    data:['delivery BOL','signatures','final payment'],
@@ -243,7 +237,7 @@ const SEED=[
      {t:'Sign delivery with customer',s:'planned'},
      {t:'Collect final payment',s:'planned'}
    ]},
-  {id:'delivreport',dept:'reports',title:'Delivery report',kind:'',x:755,y:705,w:265,h:120,
+  {id:'delivreport',dept:'reports',title:'Delivery report',kind:'',x:755,y:780,w:265,h:120,
    desc:'Summary of delivery; feeds reconciliation.',
    milestone:'Capture delivery outcome + final payment collected.',
    data:['amount delivered','condition at delivery'],
@@ -253,7 +247,7 @@ const SEED=[
      {t:'Final payment reconciliation',s:'planned'},
      {t:'Feed totals to Job $',s:'planned'}
    ]},
-  {id:'signeddeliv',dept:'reports',title:'Signed delivery paperwork',kind:'',x:755,y:855,w:265,h:130,
+  {id:'signeddeliv',dept:'reports',title:'Signed delivery paperwork',kind:'',x:755,y:1010,w:265,h:130,
    desc:'Final signed documents, archived.',
    milestone:'Generate + store the signed proof of delivery.',
    data:['signed POD','delivery BOL'],
@@ -324,17 +318,7 @@ function render(){
   edgesSvg.setAttribute('width',CANVAS_W);
   edgesSvg.setAttribute('height',CANVAS_H);
   document.querySelectorAll('.node,.zone').forEach(e=>e.remove());
-  // zones (behind)
-  ZONES.forEach(z=>{
-    const d=DEPTS[z.dept];
-    const el=document.createElement('div');
-    el.className='zone';
-    el.style.left=z.x+'px';el.style.top=z.y+'px';el.style.width=z.w+'px';el.style.height=z.h+'px';
-    el.style.borderColor=d.color;el.style.background=d.bg;
-    el.innerHTML='<span class="zlabel" style="background:'+d.color+'">'+d.name+'</span>';
-    canvas.appendChild(el);
-  });
-  // nodes
+  // nodes (measured first so zones can wrap them)
   NODES.forEach(n=>{
     const st=nodeStatus(n), pct=nodePct(n);
     const el=document.createElement('div');
@@ -351,8 +335,25 @@ function render(){
     canvas.appendChild(el);
     n._w=el.offsetWidth; n._h=el.offsetHeight;
   });
+  renderZones();
   drawEdges();
   updateOverall();
+}
+function renderZones(){
+  document.querySelectorAll('.zone').forEach(e=>e.remove());
+  Object.keys(DEPTS).forEach(key=>{
+    const mem=NODES.filter(n=>n.dept===key); if(!mem.length)return;
+    const d=DEPTS[key];
+    let minX=1e9,minY=1e9,maxX=-1e9,maxY=-1e9;
+    mem.forEach(n=>{minX=Math.min(minX,n.x);minY=Math.min(minY,n.y);maxX=Math.max(maxX,n.x+dimW(n));maxY=Math.max(maxY,n.y+dimH(n));});
+    const padX=22,padTop=40,padBot=20;
+    const el=document.createElement('div');el.className='zone';
+    el.style.left=(minX-padX)+'px';el.style.top=(minY-padTop)+'px';
+    el.style.width=(maxX-minX+padX*2)+'px';el.style.height=(maxY-minY+padTop+padBot)+'px';
+    el.style.borderColor=d.color;el.style.background=d.bg;
+    el.innerHTML='<span class="zlabel" style="background:'+d.color+'">'+d.name+'</span>';
+    canvas.appendChild(el);
+  });
 }
 function stLabel(s){return s==='done'?'Done':s==='progress'?'In progress':'Planned';}
 
@@ -403,7 +404,7 @@ function attachDrag(el,n){
     if(Math.abs(dx)>3||Math.abs(dy)>3)moved=true;
     n.x=Math.max(0,Math.round(ox+dx)); n.y=Math.max(0,Math.round(oy+dy));
     el.style.left=n.x+'px';el.style.top=n.y+'px';
-    drawEdges();
+    renderZones();drawEdges();
   });
   el.addEventListener('pointerup',ev=>{
     dragging=false;el.classList.remove('dragging');
