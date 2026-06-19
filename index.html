@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rushmore CRM — Build Map</title>
+<style>
+  :root{
+    --navy:#16324f; --navy2:#1d456b; --ink:#1f2a37; --muted:#6b7785; --line:#e3e8ee;
+    --bg:#eef2f6; --card:#fff;
+    --done:#1D9E75; --doneBg:#e7f6f0;
+    --prog:#E0922F; --progBg:#fcf2e3;
+    --plan:#9aa3ad; --planBg:#f1f3f6;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+  header{background:var(--navy);color:#fff;padding:12px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;position:sticky;top:0;z-index:30}
+  header h1{font-size:17px;margin:0;font-weight:800;letter-spacing:.2px}
+  header .tag{font-size:10px;font-weight:700;background:rgba(255,255,255,.16);padding:3px 8px;border-radius:999px;letter-spacing:.5px}
+  .grow{flex:1}
+  .legend{display:flex;gap:14px;align-items:center;font-size:12px;color:#cfe0f0}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+  .dot.done{background:var(--done)} .dot.progress{background:var(--prog)} .dot.planned{background:var(--plan)}
+  .hbtn{background:rgba(255,255,255,.12);color:#fff;border:0;border-radius:8px;padding:7px 11px;font-size:12px;font-weight:600;cursor:pointer}
+  .hbtn:hover{background:rgba(255,255,255,.22)}
+  .prog-wrap{display:flex;align-items:center;gap:8px;font-size:12px;color:#cfe0f0;min-width:180px}
+  .prog-bar{flex:1;height:7px;background:rgba(255,255,255,.18);border-radius:99px;overflow:hidden}
+  .prog-bar i{display:block;height:100%;background:var(--done);width:0%}
+  .stage{position:relative;overflow:auto;height:calc(100vh - 52px)}
+  .canvas{position:relative;transform-origin:0 0}
+  svg.edges{position:absolute;left:0;top:0;pointer-events:none;z-index:1;overflow:visible}
+  .edges path{stroke:#9fb0c2;stroke-width:2.4;fill:none}
+  .edges text{fill:#7c8a99;font-size:12px;font-style:italic;font-weight:600}
+  .node{position:absolute;z-index:2;background:var(--card);border:2px solid var(--line);border-radius:14px;
+        padding:11px 13px;cursor:grab;box-shadow:0 2px 6px rgba(20,50,79,.08);transition:box-shadow .12s,transform .05s;user-select:none}
+  .node:hover{box-shadow:0 6px 18px rgba(20,50,79,.18)}
+  .node.dragging{cursor:grabbing;box-shadow:0 10px 26px rgba(20,50,79,.28);z-index:5}
+  .node .nt{font-weight:800;font-size:15px;line-height:1.18;margin-bottom:4px;display:flex;align-items:center;gap:7px}
+  .node .nd{font-size:11.5px;color:var(--muted);line-height:1.3}
+  .node .nbar{height:6px;border-radius:99px;background:#eef1f5;margin-top:9px;overflow:hidden}
+  .node .nbar i{display:block;height:100%;width:0%}
+  .node .ncount{font-size:10.5px;color:var(--muted);margin-top:5px;font-weight:600}
+  .node.s-done{border-color:var(--done)} .node.s-done .nbar i{background:var(--done)}
+  .node.s-progress{border-color:var(--prog)} .node.s-progress .nbar i{background:var(--prog)}
+  .node.s-planned{border-color:#cdd5de} .node.s-planned .nbar i{background:var(--plan)}
+  .node.kind-input{background:#eaf2fb;border-color:#bcd4ee}
+  .node.kind-money{background:#eafaf3;border-style:dashed}
+  .badge{font-size:9px;font-weight:800;letter-spacing:.4px;padding:2px 7px;border-radius:999px;text-transform:uppercase}
+  .badge.done{background:var(--doneBg);color:var(--done)} .badge.progress{background:var(--progBg);color:#b5740f} .badge.planned{background:var(--planBg);color:#7a838d}
+
+  /* drawer */
+  .scrim{position:fixed;inset:0;background:rgba(15,30,48,.32);opacity:0;pointer-events:none;transition:opacity .18s;z-index:40}
+  .scrim.show{opacity:1;pointer-events:auto}
+  .drawer{position:fixed;top:0;right:0;height:100%;width:400px;max-width:92vw;background:#fff;z-index:50;
+          box-shadow:-8px 0 30px rgba(15,30,48,.22);transform:translateX(102%);transition:transform .2s;display:flex;flex-direction:column}
+  .drawer.show{transform:translateX(0)}
+  .dhead{background:var(--navy);color:#fff;padding:16px 18px}
+  .dhead h2{margin:0 0 4px;font-size:18px}
+  .dhead .sub{font-size:12px;color:#cfe0f0}
+  .dbody{padding:16px 18px;overflow:auto;flex:1}
+  .sec{margin-bottom:20px}
+  .sec h3{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:0 0 9px}
+  .statline{display:flex;gap:7px}
+  .statbtn{flex:1;border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:7px;font-size:12px;font-weight:700;cursor:pointer;color:var(--muted)}
+  .statbtn.on.done{background:var(--doneBg);border-color:var(--done);color:var(--done)}
+  .statbtn.on.progress{background:var(--progBg);border-color:var(--prog);color:#b5740f}
+  .statbtn.on.planned{background:var(--planBg);border-color:var(--plan);color:#5f6872}
+  textarea,input.txt{width:100%;border:1.5px solid var(--line);border-radius:9px;padding:9px;font:inherit;font-size:13px;resize:vertical}
+  textarea:focus,input.txt:focus{outline:none;border-color:var(--navy2)}
+  .feat{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+  .fchip{flex:0 0 auto;width:80px;border:0;border-radius:7px;padding:5px 0;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;cursor:pointer}
+  .fchip.done{background:var(--doneBg);color:var(--done)} .fchip.progress{background:var(--progBg);color:#b5740f} .fchip.planned{background:var(--planBg);color:#7a838d}
+  .feat input.ft{flex:1;border:0;border-bottom:1px solid transparent;padding:4px 2px;font:inherit;font-size:13px;background:transparent}
+  .feat input.ft:focus{outline:none;border-bottom-color:var(--line)}
+  .feat .del{border:0;background:none;color:#c2c9d2;cursor:pointer;font-size:16px;line-height:1;padding:2px 4px}
+  .feat .del:hover{color:#e15b5b}
+  .addrow{display:flex;gap:7px;margin-top:6px}
+  .addrow input{flex:1}
+  .addrow button,.tagadd button{border:0;background:var(--navy2);color:#fff;border-radius:8px;padding:0 12px;font-size:12px;font-weight:700;cursor:pointer}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:7px}
+  .tag2{background:#eef3f8;border:1px solid #dde6ef;color:#42505f;font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:999px;display:inline-flex;gap:6px;align-items:center}
+  .tag2 b{cursor:pointer;color:#9aa6b2}
+  .tag2 b:hover{color:#e15b5b}
+  .tagadd{display:flex;gap:7px}
+  .hint{font-size:11px;color:var(--muted);margin-top:7px;line-height:1.4}
+  .zoombar{position:fixed;left:14px;bottom:14px;z-index:35;display:flex;gap:6px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:5px;box-shadow:0 3px 10px rgba(20,50,79,.12)}
+  .zoombar button{border:0;background:#f1f4f8;width:32px;height:32px;border-radius:7px;font-size:16px;font-weight:700;cursor:pointer;color:var(--ink)}
+  .zoombar button:hover{background:#e4e9f0}
+</style>
+</head>
+<body>
+<header>
+  <h1>Rushmore CRM</h1><span class="tag">BUILD MAP</span>
+  <div class="prog-wrap"><span id="pPct">0%</span><div class="prog-bar"><i id="pBar"></i></div></div>
+  <div class="grow"></div>
+  <div class="legend">
+    <span><i class="dot done"></i>Done</span>
+    <span><i class="dot progress"></i>In progress</span>
+    <span><i class="dot planned"></i>Planned</span>
+  </div>
+  <button class="hbtn" onclick="exportJSON()">⬇ Export</button>
+  <button class="hbtn" onclick="document.getElementById('imp').click()">⬆ Import</button>
+  <button class="hbtn" onclick="resetAll()">↺ Reset</button>
+  <input id="imp" type="file" accept="application/json" style="display:none" onchange="importJSON(event)">
+</header>
+
+<div class="stage" id="stage">
+  <div class="canvas" id="canvas">
+    <svg class="edges" id="edges"></svg>
+  </div>
+</div>
+
+<div class="zoombar">
+  <button onclick="zoom(-1)">−</button><button onclick="zoom(0)">⌂</button><button onclick="zoom(1)">+</button>
+</div>
+
+<div class="scrim" id="scrim" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer">
+  <div class="dhead"><h2 id="dTitle">—</h2><div class="sub" id="dSub"></div></div>
+  <div class="dbody" id="dBody"></div>
+</aside>
+
+<script>
+const KEY='rvl_crmmap_v1';
+const CANVAS_W=1090, CANVAS_H=1010;
+
+/* ---------- seed (reflects real project status, June 2026) ---------- */
+const SEED=[
+  {id:'estimate',title:'Estimate from broker',kind:'input',x:110,y:20,w:260,h:120,
+   desc:'Broker estimate enters the system and is parsed into a job.',
+   data:['customer','addresses','volume','charges','inventory','pickup/delivery dates'],
+   notes:'Mostly one broker (Safe Ship), consistent format. Intake email + AI extraction is the front door to everything.',
+   features:[
+     {t:'Dedicated intake email (auto-forward)',s:'planned'},
+     {t:'AI extraction of estimate fields',s:'progress'},
+     {t:'Self-check: totals sum, math, required fields',s:'planned'}
+   ]},
+  {id:'dispatch',title:'Dispatch pickup board',kind:'',x:110,y:190,w:285,h:125,
+   desc:'Office schedules pickups and assigns a foreman.',
+   data:['jobs','foremen roster','pickup ETA windows'],
+   notes:'Live in the Dispatch app.',
+   features:[
+     {t:'Create job from estimate',s:'done'},
+     {t:'Sort / group board by pickup date',s:'done'},
+     {t:'Assign foreman from roster',s:'done'},
+     {t:'3-hour pickup window (ETA)',s:'done'},
+     {t:'Short foreman link (#j=)',s:'done'},
+     {t:'Highlight PGS / bulky / customer notes',s:'done'}
+   ]},
+  {id:'foreman',title:"Foreman's account",kind:'',x:475,y:380,w:240,h:135,
+   desc:'Foreman fills & signs the paperwork with the customer on site.',
+   data:['BOL fields','signatures','GPS + timestamp'],
+   notes:'Live: portal + full 5-form fill + multi-signature + official CSI PDF via backend.',
+   features:[
+     {t:'Foreman portal login',s:'done'},
+     {t:'My-jobs dashboard',s:'done'},
+     {t:'Job + inventory view',s:'done'},
+     {t:'Fill BOL (full 5-form packet)',s:'done'},
+     {t:'Inline multi-signature (cust + foreman)',s:'done'},
+     {t:'Confirm pickup window',s:'done'},
+     {t:'Generate official CSI PDF',s:'done'}
+   ]},
+  {id:'pickup',title:'Pickup report',kind:'',x:840,y:370,w:205,h:120,
+   desc:'Summary of what happened at pickup; feeds reconciliation.',
+   data:['amount collected','exceptions','signed BOL'],
+   notes:'Signed BOL doc + job sheet exist; charge capture & money feed still to wire.',
+   features:[
+     {t:'Signed BOL document (view / print)',s:'done'},
+     {t:'Job sheet for crew',s:'done'},
+     {t:'Charges collected at pickup',s:'progress'},
+     {t:'Exceptions / condition notes',s:'done'},
+     {t:'Feed totals to Job $',s:'planned'}
+   ]},
+  {id:'jobmoney',title:'Job $',kind:'money',x:840,y:560,w:205,h:115,
+   desc:'Money reconciliation across the whole job.',
+   data:['estimate $','pickup $','delivery $','balance'],
+   notes:'The reconciliation logic exists in the workbook; needs wiring into the app.',
+   features:[
+     {t:'Estimate vs actual charges',s:'planned'},
+     {t:'Deposit / balance tracking',s:'progress'},
+     {t:'Roll up pickup + delivery payments',s:'planned'},
+     {t:'Profit / payout view',s:'planned'}
+   ]},
+  {id:'delivboard',title:'Delivery board',kind:'',x:110,y:660,w:285,h:120,
+   desc:'Office schedules deliveries and assigns drivers.',
+   data:['deliveries','drivers roster'],
+   notes:'Not built yet. Mirror of the dispatch board for the delivery side.',
+   features:[
+     {t:'Carry filled paperwork from pickup',s:'planned'},
+     {t:'Schedule deliveries',s:'planned'},
+     {t:'Assign driver from roster',s:'planned'},
+     {t:'Delivery date / window',s:'planned'}
+   ]},
+  {id:'driver',title:"Driver's account",kind:'',x:485,y:665,w:215,h:125,
+   desc:'Driver completes delivery and signs with the customer.',
+   data:['delivery BOL','signatures','final payment'],
+   notes:'Not built yet. Mirror of the foreman account for delivery.',
+   features:[
+     {t:'Driver portal login',s:'planned'},
+     {t:'Delivery job view',s:'planned'},
+     {t:'Sign delivery with customer',s:'planned'},
+     {t:'Collect final payment',s:'planned'}
+   ]},
+  {id:'delivreport',title:'Delivery report',kind:'',x:840,y:760,w:205,h:115,
+   desc:'Summary of delivery; feeds reconciliation.',
+   data:['amount delivered','condition at delivery'],
+   notes:'Not built yet.',
+   features:[
+     {t:'Delivery summary',s:'planned'},
+     {t:'Final payment reconciliation',s:'planned'},
+     {t:'Feed totals to Job $',s:'planned'}
+   ]},
+  {id:'signeddeliv',title:'Signed delivery paperwork',kind:'',x:485,y:855,w:240,h:120,
+   desc:'Final signed delivery documents, archived.',
+   data:['signed POD','delivery BOL'],
+   notes:'Not built yet. The closing artifact of the job.',
+   features:[
+     {t:'Delivery BOL / proof of delivery',s:'planned'},
+     {t:'Stored + emailed to customer',s:'planned'}
+   ]}
+];
+
+const EDGES=[
+  {f:'estimate',t:'dispatch'},
+  {f:'dispatch',t:'foreman'},
+  {f:'foreman',t:'pickup'},
+  {f:'pickup',t:'jobmoney'},
+  {f:'foreman',t:'delivboard',label:'filled paperwork'},
+  {f:'delivboard',t:'driver'},
+  {f:'driver',t:'delivreport'},
+  {f:'delivreport',t:'jobmoney'},
+  {f:'driver',t:'signeddeliv'}
+];
+
+let NODES=[], scale=1, openId=null;
+
+/* ---------- persistence ---------- */
+function load(){
+  let saved={};
+  try{saved=JSON.parse(localStorage.getItem(KEY)||'{}');}catch(e){}
+  NODES=SEED.map(s=>{
+    const o=saved[s.id]||{};
+    return {...s,
+      x:(o.x!=null?o.x:s.x), y:(o.y!=null?o.y:s.y),
+      desc:(o.desc!=null?o.desc:s.desc),
+      notes:(o.notes!=null?o.notes:s.notes),
+      data:(o.data?o.data.slice():s.data.slice()),
+      features:(o.features?JSON.parse(JSON.stringify(o.features)):JSON.parse(JSON.stringify(s.features)))
+    };
+  });
+}
+function save(){
+  const out={};
+  NODES.forEach(n=>out[n.id]={x:n.x,y:n.y,desc:n.desc,notes:n.notes,data:n.data,features:n.features});
+  localStorage.setItem(KEY,JSON.stringify(out));
+}
+
+/* ---------- status helpers ---------- */
+function nodeStatus(n){
+  if(!n.features.length)return 'planned';
+  const d=n.features.filter(f=>f.s==='done').length;
+  const p=n.features.filter(f=>f.s==='progress').length;
+  if(d===n.features.length)return 'done';
+  if(d>0||p>0)return 'progress';
+  return 'planned';
+}
+function nodePct(n){
+  if(!n.features.length)return 0;
+  const score=n.features.reduce((a,f)=>a+(f.s==='done'?1:f.s==='progress'?0.5:0),0);
+  return Math.round(100*score/n.features.length);
+}
+
+/* ---------- render ---------- */
+const canvas=document.getElementById('canvas');
+const edgesSvg=document.getElementById('edges');
+function render(){
+  canvas.style.width=CANVAS_W+'px';
+  canvas.style.height=CANVAS_H+'px';
+  edgesSvg.setAttribute('width',CANVAS_W);
+  edgesSvg.setAttribute('height',CANVAS_H);
+  // nodes
+  document.querySelectorAll('.node').forEach(e=>e.remove());
+  NODES.forEach(n=>{
+    const st=nodeStatus(n), pct=nodePct(n);
+    const el=document.createElement('div');
+    el.className='node s-'+st+(n.kind?(' kind-'+n.kind):'');
+    el.style.left=n.x+'px'; el.style.top=n.y+'px'; el.style.width=n.w+'px'; el.style.minHeight=n.h+'px';
+    el.dataset.id=n.id;
+    const cnt=n.features.length?(n.features.filter(f=>f.s==='done').length+' / '+n.features.length+' done'):'no features yet';
+    el.innerHTML='<div class="nt">'+esc(n.title)+' <span class="badge '+st+'">'+stLabel(st)+'</span></div>'+
+      '<div class="nd">'+esc(n.desc)+'</div>'+
+      '<div class="nbar"><i style="width:'+pct+'%"></i></div>'+
+      '<div class="ncount">'+cnt+'</div>';
+    attachDrag(el,n);
+    canvas.appendChild(el);
+    n._w=el.offsetWidth; n._h=el.offsetHeight;
+  });
+  drawEdges();
+  updateOverall();
+}
+function stLabel(s){return s==='done'?'Done':s==='progress'?'In progress':'Planned';}
+
+function nodeById(id){return NODES.find(n=>n.id===id);}
+function dimW(n){return n._w||n.w;}
+function dimH(n){return n._h||n.h;}
+function borderPoint(n,tx,ty){
+  const w=dimW(n),h=dimH(n),cx=n.x+w/2, cy=n.y+h/2, dx=tx-cx, dy=ty-cy;
+  if(!dx&&!dy)return {x:cx,y:cy};
+  const sx=dx?(w/2)/Math.abs(dx):Infinity, sy=dy?(h/2)/Math.abs(dy):Infinity;
+  const s=Math.min(sx,sy);
+  return {x:cx+dx*s, y:cy+dy*s};
+}
+function drawEdges(){
+  let m='<defs><marker id="ah" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">'+
+        '<path d="M0,0 L8,3 L0,6 Z" fill="#8195a8"/></marker></defs>';
+  EDGES.forEach(e=>{
+    const a=nodeById(e.f), b=nodeById(e.t);
+    const ac={x:a.x+dimW(a)/2,y:a.y+dimH(a)/2}, bc={x:b.x+dimW(b)/2,y:b.y+dimH(b)/2};
+    const p1=borderPoint(a,bc.x,bc.y), p2=borderPoint(b,ac.x,ac.y);
+    m+='<path d="M'+p1.x+','+p1.y+' L'+p2.x+','+p2.y+'" marker-end="url(#ah)"/>';
+    if(e.label){
+      const mx=(p1.x+p2.x)/2, my=(p1.y+p2.y)/2;
+      m+='<text x="'+(mx+8)+'" y="'+(my-4)+'">'+esc(e.label)+'</text>';
+    }
+  });
+  edgesSvg.innerHTML=m;
+}
+function updateOverall(){
+  let score=0,tot=0;
+  NODES.forEach(n=>{n.features.forEach(f=>{tot++;score+=f.s==='done'?1:f.s==='progress'?0.5:0;});});
+  const pct=tot?Math.round(100*score/tot):0;
+  document.getElementById('pPct').textContent=pct+'%';
+  document.getElementById('pBar').style.width=pct+'%';
+}
+
+/* ---------- drag + click ---------- */
+function attachDrag(el,n){
+  let sx,sy,ox,oy,moved,dragging=false;
+  el.addEventListener('pointerdown',ev=>{
+    if(ev.button!==0)return;
+    dragging=true;moved=false;sx=ev.clientX;sy=ev.clientY;ox=n.x;oy=n.y;
+    el.setPointerCapture(ev.pointerId);el.classList.add('dragging');
+  });
+  el.addEventListener('pointermove',ev=>{
+    if(!dragging)return;
+    const dx=(ev.clientX-sx)/scale, dy=(ev.clientY-sy)/scale;
+    if(Math.abs(dx)>3||Math.abs(dy)>3)moved=true;
+    n.x=Math.max(0,Math.round(ox+dx)); n.y=Math.max(0,Math.round(oy+dy));
+    el.style.left=n.x+'px';el.style.top=n.y+'px';
+    drawEdges();
+  });
+  el.addEventListener('pointerup',ev=>{
+    dragging=false;el.classList.remove('dragging');
+    if(moved){save();}else{openDrawer(n.id);}
+  });
+}
+
+/* ---------- drawer ---------- */
+function openDrawer(id){
+  openId=id; const n=nodeById(id);
+  document.getElementById('dTitle').textContent=n.title;
+  document.getElementById('dSub').textContent=stLabel(nodeStatus(n))+' · '+nodePct(n)+'% complete';
+  renderBody(n);
+  document.getElementById('drawer').classList.add('show');
+  document.getElementById('scrim').classList.add('show');
+}
+function closeDrawer(){openId=null;document.getElementById('drawer').classList.remove('show');document.getElementById('scrim').classList.remove('show');}
+function refreshAfterEdit(){const n=nodeById(openId);document.getElementById('dSub').textContent=stLabel(nodeStatus(n))+' · '+nodePct(n)+'% complete';save();render();}
+
+function renderBody(n){
+  const b=document.getElementById('dBody');
+  let h='';
+  h+='<div class="sec"><h3>Description</h3><textarea rows="2" oninput="edDesc(this.value)">'+esc(n.desc)+'</textarea></div>';
+  h+='<div class="sec"><h3>Features &amp; status</h3><div id="featList"></div>'+
+     '<div class="addrow"><input class="txt" id="newFeat" placeholder="Add a feature…" onkeydown="if(event.key===\'Enter\')addFeat()"><button onclick="addFeat()">Add</button></div>'+
+     '<div class="hint">Tap a status chip to cycle Planned → In&nbsp;progress → Done.</div></div>';
+  h+='<div class="sec"><h3>Data it handles</h3><div class="tags" id="tagList"></div>'+
+     '<div class="tagadd"><input class="txt" id="newTag" placeholder="Add a data field…" onkeydown="if(event.key===\'Enter\')addTag()"><button onclick="addTag()">Add</button></div></div>';
+  h+='<div class="sec"><h3>Notes</h3><textarea rows="4" oninput="edNotes(this.value)">'+esc(n.notes)+'</textarea></div>';
+  b.innerHTML=h;
+  renderFeats(); renderTags();
+}
+function renderFeats(){
+  const n=nodeById(openId);
+  document.getElementById('featList').innerHTML=n.features.map((f,i)=>
+    '<div class="feat"><button class="fchip '+f.s+'" onclick="cycleFeat('+i+')">'+stLabel(f.s)+'</button>'+
+    '<input class="ft" value="'+esc(f.t)+'" oninput="edFeat('+i+',this.value)">'+
+    '<button class="del" onclick="delFeat('+i+')">×</button></div>').join('');
+}
+function renderTags(){
+  const n=nodeById(openId);
+  document.getElementById('tagList').innerHTML=n.data.map((d,i)=>
+    '<span class="tag2">'+esc(d)+' <b onclick="delTag('+i+')">×</b></span>').join('')||'<span class="hint">None yet.</span>';
+}
+function cycleFeat(i){const n=nodeById(openId);const o={planned:'progress',progress:'done',done:'planned'};n.features[i].s=o[n.features[i].s];renderFeats();refreshAfterEdit();}
+function edFeat(i,v){nodeById(openId).features[i].t=v;save();}
+function delFeat(i){const n=nodeById(openId);n.features.splice(i,1);renderFeats();refreshAfterEdit();}
+function addFeat(){const inp=document.getElementById('newFeat');const v=inp.value.trim();if(!v)return;nodeById(openId).features.push({t:v,s:'planned'});inp.value='';renderFeats();refreshAfterEdit();}
+function addTag(){const inp=document.getElementById('newTag');const v=inp.value.trim();if(!v)return;nodeById(openId).data.push(v);inp.value='';renderTags();save();}
+function delTag(i){const n=nodeById(openId);n.data.splice(i,1);renderTags();save();}
+function edDesc(v){nodeById(openId).desc=v;save();render();}
+function edNotes(v){nodeById(openId).notes=v;save();}
+
+/* ---------- zoom ---------- */
+function zoom(d){
+  if(d===0)scale=1; else scale=Math.min(1.6,Math.max(.5,scale+d*0.1));
+  canvas.style.transform='scale('+scale+')';
+}
+
+/* ---------- export / import / reset ---------- */
+function exportJSON(){
+  const out={}; NODES.forEach(n=>out[n.id]={x:n.x,y:n.y,desc:n.desc,notes:n.notes,data:n.data,features:n.features});
+  const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='rushmore-crm-map.json';a.click();
+}
+function importJSON(ev){
+  const f=ev.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{localStorage.setItem(KEY,r.result);load();render();alert('Map imported.');}catch(e){alert('Could not read that file.');}};
+  r.readAsText(f); ev.target.value='';
+}
+function resetAll(){if(confirm('Reset the map to the default Rushmore lifecycle? Your edits will be lost.')){localStorage.removeItem(KEY);load();render();closeDrawer();}}
+
+/* ---------- util ---------- */
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer();});
+
+load();render();
+</script>
+</body>
+</html>
