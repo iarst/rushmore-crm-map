@@ -123,7 +123,7 @@
 </aside>
 
 <script>
-const KEY='rvl_crmmap_v1';
+const KEY='rvl_crmmap_v2';
 const CANVAS_W=1090, CANVAS_H=1010;
 
 /* ---------- seed (reflects real project status, June 2026) ---------- */
@@ -163,25 +163,39 @@ const SEED=[
      {t:'Generate official CSI PDF',s:'done'}
    ]},
   {id:'pickup',title:'Pickup report',kind:'',x:840,y:370,w:205,h:120,
-   desc:'Summary of what happened at pickup; feeds reconciliation.',
-   data:['amount collected','exceptions','signed BOL'],
-   notes:'Signed BOL doc + job sheet exist; charge capture & money feed still to wire.',
+   desc:"Foreman's post-job report (the Google Form today); feeds the bookkeeper.",
+   data:['collected balance','expenses','receipts','photos','trucks/trips','job cf','blankets'],
+   notes:'Plan: native in-app report the foreman fills right after signing, with a Google Form/Sheet backup copy. Replaces the standalone Google Form so the report, money, and BOL live together. Mirrors all current Form fields.',
    features:[
      {t:'Signed BOL document (view / print)',s:'done'},
      {t:'Job sheet for crew',s:'done'},
-     {t:'Charges collected at pickup',s:'progress'},
-     {t:'Exceptions / condition notes',s:'done'},
+     {t:'Native in-app job report (replaces Form)',s:'planned'},
+     {t:'Mirror submission to Google Sheet (backup)',s:'planned'},
+     {t:'Trucks / semi / trips used',s:'planned'},
+     {t:'Storage location + access code',s:'planned'},
+     {t:'Inventory list + photos (truck & storage)',s:'planned'},
+     {t:'Customer review screenshots',s:'planned'},
+     {t:'Collected balance + method of pay',s:'progress'},
+     {t:'Payment confirmation photo',s:'planned'},
+     {t:'Job + helper expenses + receipts',s:'planned'},
+     {t:'Blankets / job cf / multi-day (2)(3)',s:'planned'},
+     {t:'Delays / issues / comments',s:'done'},
      {t:'Feed totals to Job $',s:'planned'}
    ]},
   {id:'jobmoney',title:'Job $',kind:'money',x:840,y:560,w:205,h:115,
-   desc:'Money reconciliation across the whole job.',
-   data:['estimate $','pickup $','delivery $','balance'],
-   notes:'The reconciliation logic exists in the workbook; needs wiring into the app.',
+   desc:'Bookkeeper turns each job report into payouts, expenses & profit.',
+   data:['collected $','foreman payout','helper payouts','expenses','profit'],
+   notes:'Payouts are mixed / case-by-case — the bookkeeper sets foreman & helper pay per job from the report notes. Profit = collected − expenses − payouts. Replaces the manual Sheet step. Goal: bookkeeper works each job in-app and exports for payroll/accounting.',
    features:[
+     {t:'Pull collected balance from job report',s:'planned'},
+     {t:'Foreman payout (per-job: % or flat)',s:'planned'},
+     {t:'Helper payouts (per-job)',s:'planned'},
+     {t:'Expense roll-up (packing, trucks, fuel, hotel, receipts)',s:'planned'},
+     {t:'Profit = collected − expenses − payouts',s:'planned'},
      {t:'Estimate vs actual charges',s:'planned'},
      {t:'Deposit / balance tracking',s:'progress'},
-     {t:'Roll up pickup + delivery payments',s:'planned'},
-     {t:'Profit / payout view',s:'planned'}
+     {t:'Bookkeeper review + approve per job',s:'planned'},
+     {t:'Export for payroll / accounting',s:'planned'}
    ]},
   {id:'delivboard',title:'Delivery board',kind:'',x:110,y:660,w:285,h:120,
    desc:'Office schedules deliveries and assigns drivers.',
