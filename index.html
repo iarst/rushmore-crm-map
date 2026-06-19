@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Rushmore CRM — Build Map</title>
+<title>Rushmore — Operations Blueprint</title>
 <style>
   :root{
     --navy:#16324f; --navy2:#1d456b; --ink:#1f2a37; --muted:#6b7785; --line:#e3e8ee;
@@ -25,40 +25,35 @@
   .dot.done{background:var(--done)} .dot.progress{background:var(--prog)} .dot.planned{background:var(--plan)}
   .hbtn{background:rgba(255,255,255,.12);color:#fff;border:0;border-radius:8px;padding:7px 11px;font-size:12px;font-weight:600;cursor:pointer}
   .hbtn:hover{background:rgba(255,255,255,.22)}
-  .prog-wrap{display:flex;align-items:center;gap:8px;font-size:12px;color:#cfe0f0;min-width:160px}
+  .prog-wrap{display:flex;align-items:center;gap:8px;font-size:12px;color:#cfe0f0;min-width:150px}
   .prog-bar{flex:1;height:7px;background:rgba(255,255,255,.18);border-radius:99px;overflow:hidden}
   .prog-bar i{display:block;height:100%;background:var(--done);width:0%}
   .stage{position:relative;overflow:auto;height:calc(100vh - 52px)}
   .canvas{position:relative;transform-origin:0 0}
-  /* department zones */
-  .zone{position:absolute;z-index:0;border-radius:18px;border:1.6px dashed;pointer-events:none}
-  .zlabel{position:absolute;top:-12px;left:16px;font-size:11px;font-weight:800;letter-spacing:.7px;padding:3px 11px;border-radius:999px;color:#fff;white-space:nowrap}
+  .zone{position:absolute;z-index:0;border-radius:14px;border:1.5px dashed;pointer-events:none}
+  .zlabel{position:absolute;top:9px;left:14px;font-size:12px;font-weight:800;letter-spacing:.5px;padding:4px 12px;border-radius:999px;color:#fff;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.15)}
   svg.edges{position:absolute;left:0;top:0;pointer-events:none;z-index:1;overflow:visible}
-  .edges path{stroke:#8fa1b4;stroke-width:2.4;fill:none}
-  .edges text{font-size:12px;font-style:italic;font-weight:600;fill:#6f7d8c}
-  .node{position:absolute;z-index:2;background:var(--card);border:2px solid var(--line);border-radius:14px;
-        padding:11px 13px;cursor:grab;box-shadow:0 2px 6px rgba(20,50,79,.10);transition:box-shadow .12s;user-select:none}
+  .edges path{fill:none}
+  .edges text{font-size:12px;font-style:italic;font-weight:600}
+  .node{position:absolute;z-index:2;background:var(--card);border:2px solid var(--line);border-radius:13px;
+        padding:10px 12px;cursor:grab;box-shadow:0 2px 6px rgba(20,50,79,.10);transition:box-shadow .12s;user-select:none}
   .node:hover{box-shadow:0 6px 18px rgba(20,50,79,.20)}
   .node.dragging{cursor:grabbing;box-shadow:0 10px 26px rgba(20,50,79,.28);z-index:5}
-  .node .nt{font-weight:800;font-size:15px;line-height:1.18;margin-bottom:4px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-  .node .nd{font-size:11.5px;color:var(--muted);line-height:1.3}
-  .node .nbar{height:6px;border-radius:99px;background:#eef1f5;margin-top:9px;overflow:hidden}
-  .node .nbar i{display:block;height:100%;width:0%}
-  .node .ncount{font-size:10.5px;color:var(--muted);margin-top:5px;font-weight:600}
-  .node .mile{margin-top:8px;font-size:11px;color:#3a4654;background:#f3f6fa;border-left:3px solid #c3ccd6;padding:5px 8px;border-radius:0 7px 7px 0;line-height:1.32}
-  .node .mile b{color:#16324f}
-  .node.s-done{border-color:var(--done)} .node.s-done .nbar i{background:var(--done)}
-  .node.s-progress{border-color:var(--prog)} .node.s-progress .nbar i{background:var(--prog)}
-  .node.s-planned{border-color:#cdd5de} .node.s-planned .nbar i{background:var(--plan)}
-  .node.kind-input{background:#eef5fc}
-  .node.kind-money{background:#eafaf3;border-style:dashed}
-  .badge{font-size:9px;font-weight:800;letter-spacing:.4px;padding:2px 7px;border-radius:999px;text-transform:uppercase}
+  .node .nt{font-weight:800;font-size:14px;line-height:1.16;margin-bottom:5px;display:flex;align-items:flex-start;gap:6px;justify-content:space-between}
+  .node .role{font-size:11px;color:#475569;font-weight:600;margin-bottom:4px}
+  .node .what{font-size:11px;color:var(--muted);line-height:1.3}
+  .node .meta{margin-top:7px;display:flex;gap:6px;flex-wrap:wrap}
+  .node .slap{font-size:10px;font-weight:700;color:#5a6675;background:#eef2f7;padding:2px 7px;border-radius:999px}
+  .node .touchp{font-size:10px;font-weight:700;color:#a3346b;background:#fbe9f2;padding:2px 7px;border-radius:999px}
+  .node.s-done{border-color:var(--done)}
+  .node.s-progress{border-color:var(--prog)}
+  .node.s-planned{border-color:#cdd5de}
+  .badge{font-size:9px;font-weight:800;letter-spacing:.4px;padding:2px 7px;border-radius:999px;text-transform:uppercase;flex:0 0 auto}
   .badge.done{background:var(--doneBg);color:var(--done)} .badge.progress{background:var(--progBg);color:#b5740f} .badge.planned{background:var(--planBg);color:#7a838d}
 
-  /* drawer */
   .scrim{position:fixed;inset:0;background:rgba(15,30,48,.32);opacity:0;pointer-events:none;transition:opacity .18s;z-index:40}
   .scrim.show{opacity:1;pointer-events:auto}
-  .drawer{position:fixed;top:0;right:0;height:100%;width:410px;max-width:92vw;background:#fff;z-index:50;
+  .drawer{position:fixed;top:0;right:0;height:100%;width:415px;max-width:92vw;background:#fff;z-index:50;
           box-shadow:-8px 0 30px rgba(15,30,48,.22);transform:translateX(102%);transition:transform .2s;display:flex;flex-direction:column}
   .drawer.show{transform:translateX(0)}
   .dhead{background:var(--navy);color:#fff;padding:16px 18px}
@@ -66,28 +61,25 @@
   .dhead .sub{font-size:12px;color:#cfe0f0}
   .dhead .dchip{display:inline-block;margin-top:8px;font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:3px 9px;border-radius:999px;color:#fff}
   .dbody{padding:16px 18px;overflow:auto;flex:1}
-  .sec{margin-bottom:20px}
-  .sec h3{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:0 0 9px}
-  .milebox{background:#f3f6fa;border:1.5px solid #e1e8f0;border-left:4px solid var(--navy2);border-radius:8px;padding:11px}
-  .milebox h3{margin-top:0}
+  .sec{margin-bottom:18px}
+  .sec h3{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:0 0 8px}
+  .statline{display:flex;gap:7px}
+  .statbtn{flex:1;border:1.5px solid var(--line);background:#fff;border-radius:9px;padding:7px;font-size:12px;font-weight:700;cursor:pointer;color:var(--muted)}
+  .statbtn.on.done{background:var(--doneBg);border-color:var(--done);color:var(--done)}
+  .statbtn.on.progress{background:var(--progBg);border-color:var(--prog);color:#b5740f}
+  .statbtn.on.planned{background:var(--planBg);border-color:var(--plan);color:#5f6872}
   textarea,input.txt{width:100%;border:1.5px solid var(--line);border-radius:9px;padding:9px;font:inherit;font-size:13px;resize:vertical;background:#fff}
   textarea:focus,input.txt:focus{outline:none;border-color:var(--navy2)}
-  .feat{display:flex;align-items:center;gap:8px;margin-bottom:7px}
-  .fchip{flex:0 0 auto;width:80px;border:0;border-radius:7px;padding:5px 0;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;cursor:pointer}
-  .fchip.done{background:var(--doneBg);color:var(--done)} .fchip.progress{background:var(--progBg);color:#b5740f} .fchip.planned{background:var(--planBg);color:#7a838d}
-  .feat input.ft{flex:1;border:0;border-bottom:1px solid transparent;padding:4px 2px;font:inherit;font-size:13px;background:transparent}
-  .feat input.ft:focus{outline:none;border-bottom-color:var(--line)}
-  .feat .del{border:0;background:none;color:#c2c9d2;cursor:pointer;font-size:16px;line-height:1;padding:2px 4px}
-  .feat .del:hover{color:#e15b5b}
-  .addrow{display:flex;gap:7px;margin-top:6px}
-  .addrow input{flex:1}
-  .addrow button,.tagadd button{border:0;background:var(--navy2);color:#fff;border-radius:8px;padding:0 12px;font-size:12px;font-weight:700;cursor:pointer}
+  .io{display:flex;gap:9px}
+  .io .sec{flex:1}
   .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:7px}
   .tag2{background:#eef3f8;border:1px solid #dde6ef;color:#42505f;font-size:11.5px;font-weight:600;padding:3px 8px;border-radius:999px;display:inline-flex;gap:6px;align-items:center}
   .tag2 b{cursor:pointer;color:#9aa6b2}
   .tag2 b:hover{color:#e15b5b}
   .tagadd{display:flex;gap:7px}
-  .hint{font-size:11px;color:var(--muted);margin-top:7px;line-height:1.4}
+  .tagadd input{flex:1}
+  .tagadd button{border:0;background:var(--navy2);color:#fff;border-radius:8px;padding:0 12px;font-size:12px;font-weight:700;cursor:pointer}
+  .hint{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.4}
   .zoombar{position:fixed;left:14px;bottom:14px;z-index:35;display:flex;gap:6px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:5px;box-shadow:0 3px 10px rgba(20,50,79,.12)}
   .zoombar button{border:0;background:#f1f4f8;width:32px;height:32px;border-radius:7px;font-size:16px;font-weight:700;cursor:pointer;color:var(--ink)}
   .zoombar button:hover{background:#e4e9f0}
@@ -95,11 +87,11 @@
 </head>
 <body>
 <header>
-  <h1>Rushmore CRM</h1><span class="tag">BUILD MAP</span>
+  <h1>Rushmore Van Lines</h1><span class="tag">OPERATIONS BLUEPRINT</span>
   <div class="prog-wrap"><span id="pPct">0%</span><div class="prog-bar"><i id="pBar"></i></div></div>
   <div class="grow"></div>
   <div class="legend">
-    <span><i class="dot done"></i>Done</span>
+    <span><i class="dot done"></i>Live</span>
     <span><i class="dot progress"></i>In progress</span>
     <span><i class="dot planned"></i>Planned</span>
   </div>
@@ -126,148 +118,140 @@
 </aside>
 
 <script>
-const KEY='rvl_crmmap_v4';
-const CANVAS_W=1410, CANVAS_H=1250;
+const KEY='rvl_crmmap_v5';
+const CANVAS_W=3090, CANVAS_H=1640;
 
-/* ---------- departments ---------- */
-const DEPTS={
-  intake:{name:'Intake · Sales',color:'#2563eb',bg:'rgba(37,99,235,.05)'},
-  dispatch:{name:'Office · Dispatch',color:'#0d9488',bg:'rgba(13,148,136,.05)'},
-  field:{name:'Field Crew',color:'#7c3aed',bg:'rgba(124,58,237,.05)'},
-  reports:{name:'Reports · Docs',color:'#d97706',bg:'rgba(217,119,6,.05)'},
-  finance:{name:'Finance · Bookkeeping',color:'#059669',bg:'rgba(5,150,105,.06)'}
-};
-/* zones are computed dynamically from each department's member nodes */
+/* ---------- department lanes (swimlanes) ---------- */
+const LANES=[
+  {key:'sales',     label:'Sales · Intake',            color:'#2563eb', bg:'rgba(37,99,235,.05)',  y:70,   h:160},
+  {key:'dispatch',  label:'Dispatch · Pickup planning', color:'#0d9488', bg:'rgba(13,148,136,.05)', y:242,  h:160},
+  {key:'pickup',    label:'Pickup field ops',          color:'#7c3aed', bg:'rgba(124,58,237,.05)', y:414,  h:160},
+  {key:'warehouse', label:'Warehouse · Storage',        color:'#b45309', bg:'rgba(180,83,9,.05)',   y:586,  h:160},
+  {key:'delivcs',   label:'Delivery customer support',  color:'#db2777', bg:'rgba(219,39,119,.05)', y:758,  h:160},
+  {key:'delivplan', label:'Delivery planning · coord',  color:'#0284c7', bg:'rgba(2,132,199,.05)',  y:930,  h:160},
+  {key:'delivfield',label:'Delivery field ops',         color:'#4f46e5', bg:'rgba(79,70,229,.05)',  y:1102, h:160},
+  {key:'escalation',label:'Escalation · Resolution',    color:'#dc2626', bg:'rgba(220,38,38,.05)',  y:1274, h:160},
+  {key:'finance',   label:'Finance · Bookkeeping',      color:'#059669', bg:'rgba(5,150,105,.06)',  y:1446, h:160}
+];
+const LANE=Object.fromEntries(LANES.map(l=>[l.key,l]));
 
-/* ---------- seed (reflects real project status, June 2026) ---------- */
+/* ---------- stages (process blueprint, June 2026) ---------- */
 const SEED=[
-  {id:'estimate',dept:'intake',title:'Estimate from broker',kind:'input',x:100,y:110,w:270,h:120,
-   desc:'Broker estimate enters the system and is parsed into a job.',
-   milestone:'Stand up the dedicated intake email + auto-forward rule.',
-   data:['customer','addresses','volume','charges','inventory','pickup/delivery dates'],
-   notes:'Mostly one broker (Safe Ship), consistent format. Intake email + AI extraction is the front door to everything.',
-   features:[
-     {t:'Dedicated intake email (auto-forward)',s:'planned'},
-     {t:'AI extraction of estimate fields',s:'progress'},
-     {t:'Self-check: totals sum, math, required fields',s:'planned'}
-   ]},
-  {id:'dispatch',dept:'dispatch',title:'Dispatch pickup board',kind:'',x:100,y:410,w:275,h:125,
-   desc:'Office schedules pickups and assigns a foreman.',
-   milestone:'Hand the job off to the Delivery board once pickup is done.',
-   data:['jobs','foremen roster','pickup ETA windows'],
-   notes:'Live in the Dispatch app.',
-   features:[
-     {t:'Create job from estimate',s:'done'},
-     {t:'Sort / group board by pickup date',s:'done'},
-     {t:'Assign foreman from roster',s:'done'},
-     {t:'3-hour pickup window (ETA)',s:'done'},
-     {t:'Short foreman link (#j=)',s:'done'},
-     {t:'Highlight PGS / bulky / customer notes',s:'done'}
-   ]},
-  {id:'foreman',dept:'field',title:"Foreman's account",kind:'',x:435,y:430,w:255,h:135,
-   desc:'Foreman fills & signs the paperwork with the customer on site.',
-   milestone:'Connect the signed BOL straight into the job-report step.',
-   data:['BOL fields','signatures','GPS + timestamp'],
-   notes:'Live: portal + full 5-form fill + multi-signature + official CSI PDF via backend.',
-   features:[
-     {t:'Foreman portal login',s:'done'},
-     {t:'My-jobs dashboard',s:'done'},
-     {t:'Job + inventory view',s:'done'},
-     {t:'Fill BOL (full 5-form packet)',s:'done'},
-     {t:'Inline multi-signature (cust + foreman)',s:'done'},
-     {t:'Confirm pickup window',s:'done'},
-     {t:'Generate official CSI PDF',s:'done'}
-   ]},
-  {id:'pickup',dept:'reports',title:'Pickup report',kind:'',x:755,y:415,w:265,h:145,
-   desc:"Foreman's post-job report (the Google Form today); feeds the bookkeeper.",
-   milestone:'Build the native in-app job report that replaces the Google Form.',
-   data:['collected balance','expenses','receipts','photos','trucks/trips','job cf','blankets'],
-   notes:'Plan: native in-app report the foreman fills right after signing, with a Google Form/Sheet backup copy. Replaces the standalone Google Form so the report, money, and BOL live together. Mirrors all current Form fields.',
-   features:[
-     {t:'Signed BOL document (view / print)',s:'done'},
-     {t:'Job sheet for crew',s:'done'},
-     {t:'Native in-app job report (replaces Form)',s:'planned'},
-     {t:'Mirror submission to Google Sheet (backup)',s:'planned'},
-     {t:'Trucks / semi / trips used',s:'planned'},
-     {t:'Storage location + access code',s:'planned'},
-     {t:'Inventory list + photos (truck & storage)',s:'planned'},
-     {t:'Customer review screenshots',s:'planned'},
-     {t:'Collected balance + method of pay',s:'progress'},
-     {t:'Payment confirmation photo',s:'planned'},
-     {t:'Job + helper expenses + receipts',s:'planned'},
-     {t:'Blankets / job cf / multi-day (2)(3)',s:'planned'},
-     {t:'Delays / issues / comments',s:'done'},
-     {t:'Feed totals to Job $',s:'planned'}
-   ]},
-  {id:'jobmoney',dept:'finance',title:'Job $',kind:'money',x:1095,y:560,w:255,h:120,
-   desc:'Bookkeeper turns each job report into payouts, expenses & profit.',
-   milestone:'Build the per-job payout + profit calculator for the bookkeeper.',
-   data:['collected $','foreman payout','helper payouts','expenses','profit'],
-   notes:'Payouts are mixed / case-by-case — the bookkeeper sets foreman & helper pay per job from the report notes. Profit = collected − expenses − payouts. Replaces the manual Sheet step. Goal: bookkeeper works each job in-app and exports for payroll/accounting.',
-   features:[
-     {t:'Pull collected balance from job report',s:'planned'},
-     {t:'Foreman payout (per-job: % or flat)',s:'planned'},
-     {t:'Helper payouts (per-job)',s:'planned'},
-     {t:'Expense roll-up (packing, trucks, fuel, hotel, receipts)',s:'planned'},
-     {t:'Profit = collected − expenses − payouts',s:'planned'},
-     {t:'Estimate vs actual charges',s:'planned'},
-     {t:'Deposit / balance tracking',s:'progress'},
-     {t:'Bookkeeper review + approve per job',s:'planned'},
-     {t:'Export for payroll / accounting',s:'planned'}
-   ]},
-  {id:'delivboard',dept:'dispatch',title:'Delivery board',kind:'',x:100,y:770,w:275,h:120,
-   desc:'Office schedules deliveries and assigns drivers.',
-   milestone:'Clone the dispatch board for the delivery side + driver roster.',
-   data:['deliveries','drivers roster'],
-   notes:'Not built yet. Mirror of the dispatch board for the delivery side.',
-   features:[
-     {t:'Carry filled paperwork from pickup',s:'planned'},
-     {t:'Schedule deliveries',s:'planned'},
-     {t:'Assign driver from roster',s:'planned'},
-     {t:'Delivery date / window',s:'planned'}
-   ]},
-  {id:'driver',dept:'field',title:"Driver's account",kind:'',x:435,y:780,w:255,h:125,
-   desc:'Driver completes delivery and signs with the customer.',
-   milestone:'Clone the foreman account for drivers (delivery sign-off).',
-   data:['delivery BOL','signatures','final payment'],
-   notes:'Not built yet. Mirror of the foreman account for delivery.',
-   features:[
-     {t:'Driver portal login',s:'planned'},
-     {t:'Delivery job view',s:'planned'},
-     {t:'Sign delivery with customer',s:'planned'},
-     {t:'Collect final payment',s:'planned'}
-   ]},
-  {id:'delivreport',dept:'reports',title:'Delivery report',kind:'',x:755,y:780,w:265,h:120,
-   desc:'Summary of delivery; feeds reconciliation.',
-   milestone:'Capture delivery outcome + final payment collected.',
-   data:['amount delivered','condition at delivery'],
-   notes:'Not built yet.',
-   features:[
-     {t:'Delivery summary',s:'planned'},
-     {t:'Final payment reconciliation',s:'planned'},
-     {t:'Feed totals to Job $',s:'planned'}
-   ]},
-  {id:'signeddeliv',dept:'reports',title:'Signed delivery paperwork',kind:'',x:755,y:1010,w:265,h:130,
-   desc:'Final signed documents, archived.',
-   milestone:'Generate + store the signed proof of delivery.',
-   data:['signed POD','delivery BOL'],
-   notes:'Not built yet. The closing artifact of the job.',
-   features:[
-     {t:'Delivery BOL / proof of delivery',s:'planned'},
-     {t:'Stored + emailed to customer',s:'planned'}
-   ]}
+  {id:'estimate',dept:'sales',title:'Estimate intake & validation',x:70,y:102,
+   status:'progress', role:'Account / intake coordinator',
+   what:'Receive the broker estimate, validate it and create the job.',
+   inh:'Broker emails an estimate to the intake inbox.',
+   outh:'Validated job created and routed to dispatch.',
+   touch:[], systems:['Intake inbox','CRM','AI extraction'], sla:'Same day',
+   notes:'Mostly one broker (Safe Ship), consistent format. AI extraction + self-check are the quality gate at the front door.'},
+  {id:'pickupsched',dept:'dispatch',title:'Schedule pickup & assign crew',x:320,y:274,
+   status:'done', role:'Pickup (dispatch) coordinator',
+   what:'Set pickup date/window, assign a foreman & crew, plan the route.',
+   inh:'Validated job exists.',
+   outh:'Foreman has the job + a confirmed 3-hour window.',
+   touch:['Pickup window confirm'], systems:['Dispatch board','CRM'], sla:'≤24h after intake',
+   notes:'Live in the Dispatch app: board sorted by pickup date, short foreman link.'},
+  {id:'pickupops',dept:'pickup',title:'Pickup execution & BOL signing',x:570,y:446,
+   status:'done', role:'Foreman + pickup crew',
+   what:'Run the pickup, sign the BOL with the customer, load the truck.',
+   inh:'Crew assigned + pickup window set.',
+   outh:'Signed BOL packet; truck loaded.',
+   touch:['On-site signing'], systems:['Foreman app','BOL e-sign','CSI PDF'], sla:'Pickup day',
+   notes:'Live: full 5-form fill, inline multi-signature, official CSI PDF via backend.'},
+  {id:'pickupreport',dept:'pickup',title:'Pickup report filed',x:820,y:446,
+   status:'progress', role:'Foreman',
+   what:'File the post-job report: collected $, expenses, photos, trucks/trips.',
+   inh:'Pickup completed.',
+   outh:'Report submitted; totals captured for finance.',
+   touch:[], systems:['Job report (native + Google backup)','Backend store'], sla:'Same day as pickup',
+   notes:'Planned native in-app report that replaces the Google Form, with a Google Sheet backup copy.'},
+  {id:'storage',dept:'warehouse',title:'Storage intake & custody',x:1070,y:618,
+   status:'planned', role:'Warehouse team',
+   what:'Receive goods into storage and log custody (storage-in-transit).',
+   inh:'Goods loaded & pickup report filed.',
+   outh:'Custody logged; job ready for the delivery department.',
+   touch:[], systems:['Warehouse / WMS','Inventory'], sla:'On arrival',
+   notes:'Hand-off point from pickup department to delivery department. Goods may dwell here until FADD.'},
+  {id:'fadd',dept:'delivcs',title:'FADD & address follow-up',x:1320,y:790,
+   status:'planned', role:'Delivery customer support',
+   what:'Follow up with the customer to confirm the FADD and delivery address.',
+   inh:'Job is in storage.',
+   outh:'First-available-delivery-date + address locked; ready to schedule.',
+   touch:['FADD + address call'], systems:['CRM','Calling / CS tool'], sla:'Within 48h of storage',
+   notes:'FADD = first available delivery date. Starts the delivery half of the lifecycle.'},
+  {id:'delivsched',dept:'delivplan',title:'Schedule delivery & assign driver',x:1570,y:962,
+   status:'planned', role:'Delivery planner / coordinator',
+   what:'Schedule loading/delivery and assign a driver.',
+   inh:'FADD + address confirmed.',
+   outh:'Driver assigned; loading slot set.',
+   touch:[], systems:['Delivery board','CRM'], sla:'On FADD confirm',
+   notes:'Mirror of the dispatch board for the delivery side.'},
+  {id:'preconfirm',dept:'delivcs',title:'Pre-delivery confirmation call',x:1820,y:790,
+   status:'planned', role:'Delivery customer support',
+   what:'Call the customer to re-confirm date, address and all details.',
+   inh:'Delivery scheduled & driver assigned.',
+   outh:'Customer confirmed; coordinator briefed.',
+   touch:['Pre-delivery confirm call'], systems:['CRM','Calling / CS tool'], sla:'24–48h before delivery',
+   notes:'Second customer confirmation, once a loading/delivery slot exists.'},
+  {id:'coord',dept:'delivplan',title:'Driver coordination',x:2070,y:962,
+   status:'planned', role:'Delivery coordinator',
+   what:'Stay in contact with the driver: ETA, load size, paperwork.',
+   inh:'Customer re-confirmed.',
+   outh:'Driver en route with the right load & paperwork.',
+   touch:[], systems:['Driver app','Messaging'], sla:'Delivery day',
+   notes:'Keeps driver and office in sync through the delivery window.'},
+  {id:'delivops',dept:'delivfield',title:'Delivery, POD & payment',x:2320,y:1134,
+   status:'planned', role:'Driver + delivery crew',
+   what:'Deliver the goods, get the POD signed, collect final payment.',
+   inh:'Driver dispatched with paperwork.',
+   outh:'POD signed; final payment collected.',
+   touch:['Delivery & POD signing','Final payment'], systems:['Driver app','POD e-sign','Payments'], sla:'Delivery day',
+   notes:'Mirror of the foreman account, for the driver. POD = proof of delivery.'},
+  {id:'postconfirm',dept:'delivcs',title:'Post-delivery satisfaction call',x:2570,y:790,
+   status:'planned', role:'Delivery customer support',
+   what:'Call the customer to confirm everything went well.',
+   inh:'Delivery completed.',
+   outh:'Confirmed good → close the job; or → escalation.',
+   touch:['Satisfaction call'], systems:['CRM','Calling / CS tool'], sla:'≤24h after delivery',
+   notes:'Quality gate that closes the loop or triggers escalation.'},
+  {id:'escalation',dept:'escalation',title:'Escalation & resolution',x:2820,y:1306,
+   status:'planned', role:'Escalation / resolution team',
+   what:'Own any concern, claim or dispute through to resolution.',
+   inh:'Customer raises a concern / a QA call fails.',
+   outh:'Resolved & documented (claim, credit or re-do).',
+   touch:['Concern / claim handling'], systems:['Ticketing / claims','CRM'], sla:'≤24h to first response',
+   notes:'Any unhappy outcome from the confirmation calls routes here.'},
+  {id:'finance',dept:'finance',title:'Job reconciliation',x:2570,y:1478,
+   status:'planned', role:'Bookkeeper',
+   what:'Reconcile each job: payouts, expenses, profit.',
+   inh:'Pickup & delivery reports complete.',
+   outh:'Payouts & profit finalized → payroll.',
+   touch:[], systems:['Bookkeeping','Reconciliation'], sla:'≤72h after delivery',
+   notes:'Payouts are mixed / case-by-case. Profit = collected − expenses − payouts.'},
+  {id:'payroll',dept:'finance',title:'Payroll & accounting',x:2820,y:1478,
+   status:'planned', role:'Finance / accounting',
+   what:'Run payroll and export to accounting.',
+   inh:'Job reconciled & approved.',
+   outh:'Crews paid; job booked.',
+   touch:[], systems:['Payroll','Accounting export'], sla:'Weekly',
+   notes:'Closes the financial loop for the job.'}
 ];
 
 const EDGES=[
-  {f:'estimate',t:'dispatch'},
-  {f:'dispatch',t:'foreman'},
-  {f:'foreman',t:'pickup'},
-  {f:'pickup',t:'jobmoney'},
-  {f:'foreman',t:'delivboard',label:'filled paperwork'},
-  {f:'delivboard',t:'driver'},
-  {f:'driver',t:'delivreport'},
-  {f:'delivreport',t:'jobmoney'},
-  {f:'driver',t:'signeddeliv'}
+  {f:'estimate',t:'pickupsched'},
+  {f:'pickupsched',t:'pickupops'},
+  {f:'pickupops',t:'pickupreport'},
+  {f:'pickupreport',t:'storage'},
+  {f:'storage',t:'fadd'},
+  {f:'fadd',t:'delivsched'},
+  {f:'delivsched',t:'preconfirm'},
+  {f:'preconfirm',t:'coord'},
+  {f:'coord',t:'delivops'},
+  {f:'delivops',t:'postconfirm'},
+  {f:'postconfirm',t:'escalation',style:'escalate',label:'if concerns'},
+  {f:'pickupreport',t:'finance',style:'money',label:'$'},
+  {f:'delivops',t:'finance',style:'money',label:'$'},
+  {f:'finance',t:'payroll'}
 ];
 
 let NODES=[], scale=1, openId=null;
@@ -280,34 +264,29 @@ function load(){
     const o=saved[s.id]||{};
     return {...s,
       x:(o.x!=null?o.x:s.x), y:(o.y!=null?o.y:s.y),
-      desc:(o.desc!=null?o.desc:s.desc),
-      milestone:(o.milestone!=null?o.milestone:s.milestone),
+      status:(o.status!=null?o.status:s.status),
+      role:(o.role!=null?o.role:s.role),
+      what:(o.what!=null?o.what:s.what),
+      inh:(o.inh!=null?o.inh:s.inh),
+      outh:(o.outh!=null?o.outh:s.outh),
+      sla:(o.sla!=null?o.sla:s.sla),
       notes:(o.notes!=null?o.notes:s.notes),
-      data:(o.data?o.data.slice():s.data.slice()),
-      features:(o.features?JSON.parse(JSON.stringify(o.features)):JSON.parse(JSON.stringify(s.features)))
+      touch:(o.touch?o.touch.slice():s.touch.slice()),
+      systems:(o.systems?o.systems.slice():s.systems.slice())
     };
   });
 }
 function save(){
   const out={};
-  NODES.forEach(n=>out[n.id]={x:n.x,y:n.y,desc:n.desc,milestone:n.milestone,notes:n.notes,data:n.data,features:n.features});
+  NODES.forEach(n=>out[n.id]={x:n.x,y:n.y,status:n.status,role:n.role,what:n.what,inh:n.inh,outh:n.outh,sla:n.sla,notes:n.notes,touch:n.touch,systems:n.systems});
   localStorage.setItem(KEY,JSON.stringify(out));
 }
 
-/* ---------- status helpers ---------- */
-function nodeStatus(n){
-  if(!n.features.length)return 'planned';
-  const d=n.features.filter(f=>f.s==='done').length;
-  const p=n.features.filter(f=>f.s==='progress').length;
-  if(d===n.features.length)return 'done';
-  if(d>0||p>0)return 'progress';
-  return 'planned';
-}
-function nodePct(n){
-  if(!n.features.length)return 0;
-  const score=n.features.reduce((a,f)=>a+(f.s==='done'?1:f.s==='progress'?0.5:0),0);
-  return Math.round(100*score/n.features.length);
-}
+/* ---------- helpers ---------- */
+function matLabel(s){return s==='done'?'Live':s==='progress'?'In progress':'Planned';}
+function nodeById(id){return NODES.find(n=>n.id===id);}
+function dimW(n){return n._w||n.w||215;}
+function dimH(n){return n._h||n.h||96;}
 
 /* ---------- render ---------- */
 const canvas=document.getElementById('canvas');
@@ -318,48 +297,35 @@ function render(){
   edgesSvg.setAttribute('width',CANVAS_W);
   edgesSvg.setAttribute('height',CANVAS_H);
   document.querySelectorAll('.node,.zone').forEach(e=>e.remove());
-  // nodes (measured first so zones can wrap them)
+  renderLanes();
   NODES.forEach(n=>{
-    const st=nodeStatus(n), pct=nodePct(n);
     const el=document.createElement('div');
-    el.className='node s-'+st+(n.kind?(' kind-'+n.kind):'');
-    el.style.left=n.x+'px'; el.style.top=n.y+'px'; el.style.width=n.w+'px'; el.style.minHeight=n.h+'px';
+    el.className='node s-'+n.status;
+    el.style.left=n.x+'px'; el.style.top=n.y+'px'; el.style.width='215px';
     el.dataset.id=n.id;
-    const cnt=n.features.length?(n.features.filter(f=>f.s==='done').length+' / '+n.features.length+' done'):'no features yet';
-    const mile=n.milestone?'<div class="mile"><b>▶ Next:</b> '+esc(n.milestone)+'</div>':'';
-    el.innerHTML='<div class="nt">'+esc(n.title)+' <span class="badge '+st+'">'+stLabel(st)+'</span></div>'+
-      '<div class="nd">'+esc(n.desc)+'</div>'+
-      '<div class="nbar"><i style="width:'+pct+'%"></i></div>'+
-      '<div class="ncount">'+cnt+'</div>'+mile;
+    const touch=(n.touch&&n.touch.length)?'<span class="touchp">📞 customer</span>':'';
+    const sla=n.sla?'<span class="slap">⏱ '+esc(n.sla)+'</span>':'';
+    el.innerHTML='<div class="nt"><span>'+esc(n.title)+'</span><span class="badge '+n.status+'">'+matLabel(n.status)+'</span></div>'+
+      '<div class="role">👤 '+esc(n.role)+'</div>'+
+      (n.what?'<div class="what">'+esc(n.what)+'</div>':'')+
+      ((sla||touch)?'<div class="meta">'+sla+touch+'</div>':'');
     attachDrag(el,n);
     canvas.appendChild(el);
     n._w=el.offsetWidth; n._h=el.offsetHeight;
   });
-  renderZones();
   drawEdges();
   updateOverall();
 }
-function renderZones(){
+function renderLanes(){
   document.querySelectorAll('.zone').forEach(e=>e.remove());
-  Object.keys(DEPTS).forEach(key=>{
-    const mem=NODES.filter(n=>n.dept===key); if(!mem.length)return;
-    const d=DEPTS[key];
-    let minX=1e9,minY=1e9,maxX=-1e9,maxY=-1e9;
-    mem.forEach(n=>{minX=Math.min(minX,n.x);minY=Math.min(minY,n.y);maxX=Math.max(maxX,n.x+dimW(n));maxY=Math.max(maxY,n.y+dimH(n));});
-    const padX=22,padTop=40,padBot=20;
+  LANES.forEach(L=>{
     const el=document.createElement('div');el.className='zone';
-    el.style.left=(minX-padX)+'px';el.style.top=(minY-padTop)+'px';
-    el.style.width=(maxX-minX+padX*2)+'px';el.style.height=(maxY-minY+padTop+padBot)+'px';
-    el.style.borderColor=d.color;el.style.background=d.bg;
-    el.innerHTML='<span class="zlabel" style="background:'+d.color+'">'+d.name+'</span>';
+    el.style.left='10px';el.style.top=L.y+'px';el.style.width=(CANVAS_W-20)+'px';el.style.height=L.h+'px';
+    el.style.borderColor=L.color;el.style.background=L.bg;
+    el.innerHTML='<span class="zlabel" style="background:'+L.color+'">'+esc(L.label)+'</span>';
     canvas.appendChild(el);
   });
 }
-function stLabel(s){return s==='done'?'Done':s==='progress'?'In progress':'Planned';}
-
-function nodeById(id){return NODES.find(n=>n.id===id);}
-function dimW(n){return n._w||n.w;}
-function dimH(n){return n._h||n.h;}
 function borderPoint(n,tx,ty){
   const w=dimW(n),h=dimH(n),cx=n.x+w/2, cy=n.y+h/2, dx=tx-cx, dy=ty-cy;
   if(!dx&&!dy)return {x:cx,y:cy};
@@ -369,22 +335,27 @@ function borderPoint(n,tx,ty){
 }
 function drawEdges(){
   let m='<defs><marker id="ah" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">'+
-        '<path d="M0,0 L8,3 L0,6 Z" fill="#7d90a3"/></marker></defs>';
+        '<path d="M0,0 L8,3 L0,6 Z" fill="#7d90a3"/></marker>'+
+        '<marker id="ahr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">'+
+        '<path d="M0,0 L8,3 L0,6 Z" fill="#dc2626"/></marker></defs>';
   EDGES.forEach(e=>{
     const a=nodeById(e.f), b=nodeById(e.t);
     const ac={x:a.x+dimW(a)/2,y:a.y+dimH(a)/2}, bc={x:b.x+dimW(b)/2,y:b.y+dimH(b)/2};
     const p1=borderPoint(a,bc.x,bc.y), p2=borderPoint(b,ac.x,ac.y);
-    m+='<path d="M'+p1.x+','+p1.y+' L'+p2.x+','+p2.y+'" marker-end="url(#ah)"/>';
+    let stroke='#8fa1b4',dash='',mk='ah',tcol='#6f7d8c';
+    if(e.style==='money'){stroke='#5fa183';dash='stroke-dasharray="6 5"';tcol='#3f8a66';}
+    if(e.style==='escalate'){stroke='#dc2626';dash='stroke-dasharray="6 5"';mk='ahr';tcol='#dc2626';}
+    m+='<path d="M'+p1.x+','+p1.y+' L'+p2.x+','+p2.y+'" stroke="'+stroke+'" stroke-width="2.4" '+dash+' marker-end="url(#'+mk+')"/>';
     if(e.label){
       const mx=(p1.x+p2.x)/2, my=(p1.y+p2.y)/2;
-      m+='<text x="'+(mx+8)+'" y="'+(my-4)+'">'+esc(e.label)+'</text>';
+      m+='<text x="'+(mx+8)+'" y="'+(my-5)+'" fill="'+tcol+'">'+esc(e.label)+'</text>';
     }
   });
   edgesSvg.innerHTML=m;
 }
 function updateOverall(){
-  let score=0,tot=0;
-  NODES.forEach(n=>{n.features.forEach(f=>{tot++;score+=f.s==='done'?1:f.s==='progress'?0.5:0;});});
+  let score=0,tot=NODES.length;
+  NODES.forEach(n=>{score+=n.status==='done'?1:n.status==='progress'?0.5:0;});
   const pct=tot?Math.round(100*score/tot):0;
   document.getElementById('pPct').textContent=pct+'%';
   document.getElementById('pBar').style.width=pct+'%';
@@ -404,7 +375,7 @@ function attachDrag(el,n){
     if(Math.abs(dx)>3||Math.abs(dy)>3)moved=true;
     n.x=Math.max(0,Math.round(ox+dx)); n.y=Math.max(0,Math.round(oy+dy));
     el.style.left=n.x+'px';el.style.top=n.y+'px';
-    renderZones();drawEdges();
+    drawEdges();
   });
   el.addEventListener('pointerup',ev=>{
     dragging=false;el.classList.remove('dragging');
@@ -414,64 +385,55 @@ function attachDrag(el,n){
 
 /* ---------- drawer ---------- */
 function openDrawer(id){
-  openId=id; const n=nodeById(id); const d=DEPTS[n.dept];
+  openId=id; const n=nodeById(id); const L=LANE[n.dept];
   document.getElementById('dTitle').textContent=n.title;
-  document.getElementById('dSub').textContent=stLabel(nodeStatus(n))+' · '+nodePct(n)+'% complete';
-  const dc=document.getElementById('dDept');dc.textContent=d.name;dc.style.background=d.color;
+  document.getElementById('dSub').textContent=matLabel(n.status)+(n.sla?' · ⏱ '+n.sla:'');
+  const dc=document.getElementById('dDept');dc.textContent=L.label;dc.style.background=L.color;
   renderBody(n);
   document.getElementById('drawer').classList.add('show');
   document.getElementById('scrim').classList.add('show');
 }
 function closeDrawer(){openId=null;document.getElementById('drawer').classList.remove('show');document.getElementById('scrim').classList.remove('show');}
-function refreshAfterEdit(){const n=nodeById(openId);document.getElementById('dSub').textContent=stLabel(nodeStatus(n))+' · '+nodePct(n)+'% complete';save();render();}
 
 function renderBody(n){
   const b=document.getElementById('dBody');
+  const sb=s=>'<button class="statbtn '+(n.status===s?'on '+s:'')+'" onclick="setStatus(\''+s+'\')">'+matLabel(s)+'</button>';
   let h='';
-  h+='<div class="sec milebox"><h3>▶ Next milestone</h3><textarea rows="2" oninput="edMile(this.value)">'+esc(n.milestone||'')+'</textarea></div>';
-  h+='<div class="sec"><h3>Description</h3><textarea rows="2" oninput="edDesc(this.value)">'+esc(n.desc)+'</textarea></div>';
-  h+='<div class="sec"><h3>Features &amp; status</h3><div id="featList"></div>'+
-     '<div class="addrow"><input class="txt" id="newFeat" placeholder="Add a feature…" onkeydown="if(event.key===\'Enter\')addFeat()"><button onclick="addFeat()">Add</button></div>'+
-     '<div class="hint">Tap a status chip to cycle Planned → In&nbsp;progress → Done.</div></div>';
-  h+='<div class="sec"><h3>Data it handles</h3><div class="tags" id="tagList"></div>'+
-     '<div class="tagadd"><input class="txt" id="newTag" placeholder="Add a data field…" onkeydown="if(event.key===\'Enter\')addTag()"><button onclick="addTag()">Add</button></div></div>';
-  h+='<div class="sec"><h3>Notes</h3><textarea rows="4" oninput="edNotes(this.value)">'+esc(n.notes)+'</textarea></div>';
+  h+='<div class="sec"><h3>Maturity</h3><div class="statline">'+sb('done')+sb('progress')+sb('planned')+'</div></div>';
+  h+='<div class="sec"><h3>Owner / role</h3><input class="txt" value="'+esc(n.role)+'" oninput="edF(\'role\',this.value)"></div>';
+  h+='<div class="sec"><h3>What happens</h3><textarea rows="2" oninput="edF(\'what\',this.value)">'+esc(n.what)+'</textarea></div>';
+  h+='<div class="io"><div class="sec"><h3>⤵ Handoff in</h3><textarea rows="3" oninput="edF(\'inh\',this.value)">'+esc(n.inh)+'</textarea></div>'+
+     '<div class="sec"><h3>Handoff out ⤴</h3><textarea rows="3" oninput="edF(\'outh\',this.value)">'+esc(n.outh)+'</textarea></div></div>';
+  h+='<div class="sec"><h3>SLA / timing</h3><input class="txt" value="'+esc(n.sla)+'" oninput="edF(\'sla\',this.value)"></div>';
+  h+='<div class="sec"><h3>Customer touchpoints</h3><div class="tags" id="tg_touch"></div>'+
+     '<div class="tagadd"><input class="txt" id="add_touch" placeholder="Add a touchpoint…" onkeydown="if(event.key===\'Enter\')addTag(\'touch\')"><button onclick="addTag(\'touch\')">Add</button></div></div>';
+  h+='<div class="sec"><h3>Systems / tools</h3><div class="tags" id="tg_systems"></div>'+
+     '<div class="tagadd"><input class="txt" id="add_systems" placeholder="Add a system…" onkeydown="if(event.key===\'Enter\')addTag(\'systems\')"><button onclick="addTag(\'systems\')">Add</button></div></div>';
+  h+='<div class="sec"><h3>Notes</h3><textarea rows="3" oninput="edF(\'notes\',this.value)">'+esc(n.notes)+'</textarea></div>';
   b.innerHTML=h;
-  renderFeats(); renderTags();
+  renderTags('touch'); renderTags('systems');
 }
-function renderFeats(){
+function renderTags(field){
   const n=nodeById(openId);
-  document.getElementById('featList').innerHTML=n.features.map((f,i)=>
-    '<div class="feat"><button class="fchip '+f.s+'" onclick="cycleFeat('+i+')">'+stLabel(f.s)+'</button>'+
-    '<input class="ft" value="'+esc(f.t)+'" oninput="edFeat('+i+',this.value)">'+
-    '<button class="del" onclick="delFeat('+i+')">×</button></div>').join('');
+  document.getElementById('tg_'+field).innerHTML=(n[field]||[]).map((d,i)=>
+    '<span class="tag2">'+esc(d)+' <b onclick="delTag(\''+field+'\','+i+')">×</b></span>').join('')||'<span class="hint">None.</span>';
 }
-function renderTags(){
-  const n=nodeById(openId);
-  document.getElementById('tagList').innerHTML=n.data.map((d,i)=>
-    '<span class="tag2">'+esc(d)+' <b onclick="delTag('+i+')">×</b></span>').join('')||'<span class="hint">None yet.</span>';
-}
-function cycleFeat(i){const n=nodeById(openId);const o={planned:'progress',progress:'done',done:'planned'};n.features[i].s=o[n.features[i].s];renderFeats();refreshAfterEdit();}
-function edFeat(i,v){nodeById(openId).features[i].t=v;save();}
-function delFeat(i){const n=nodeById(openId);n.features.splice(i,1);renderFeats();refreshAfterEdit();}
-function addFeat(){const inp=document.getElementById('newFeat');const v=inp.value.trim();if(!v)return;nodeById(openId).features.push({t:v,s:'planned'});inp.value='';renderFeats();refreshAfterEdit();}
-function addTag(){const inp=document.getElementById('newTag');const v=inp.value.trim();if(!v)return;nodeById(openId).data.push(v);inp.value='';renderTags();save();}
-function delTag(i){const n=nodeById(openId);n.data.splice(i,1);renderTags();save();}
-function edDesc(v){nodeById(openId).desc=v;save();render();}
-function edMile(v){nodeById(openId).milestone=v;save();render();}
-function edNotes(v){nodeById(openId).notes=v;save();}
+function setStatus(s){nodeById(openId).status=s;renderBody(nodeById(openId));document.getElementById('dSub').textContent=matLabel(s)+(nodeById(openId).sla?' · ⏱ '+nodeById(openId).sla:'');save();render();}
+function edF(field,v){nodeById(openId)[field]=v;save();if(field==='role'||field==='what'||field==='sla')render();}
+function addTag(field){const inp=document.getElementById('add_'+field);const v=inp.value.trim();if(!v)return;nodeById(openId)[field].push(v);inp.value='';renderTags(field);save();render();}
+function delTag(field,i){nodeById(openId)[field].splice(i,1);renderTags(field);save();render();}
 
 /* ---------- zoom ---------- */
 function zoom(d){
-  if(d===0)scale=1; else scale=Math.min(1.6,Math.max(.5,scale+d*0.1));
+  if(d===0)scale=1; else scale=Math.min(1.4,Math.max(.35,scale+d*0.1));
   canvas.style.transform='scale('+scale+')';
 }
 
 /* ---------- export / import / reset ---------- */
 function exportJSON(){
-  const out={}; NODES.forEach(n=>out[n.id]={x:n.x,y:n.y,desc:n.desc,milestone:n.milestone,notes:n.notes,data:n.data,features:n.features});
+  const out={}; NODES.forEach(n=>out[n.id]={x:n.x,y:n.y,status:n.status,role:n.role,what:n.what,inh:n.inh,outh:n.outh,sla:n.sla,notes:n.notes,touch:n.touch,systems:n.systems});
   const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='rushmore-crm-map.json';a.click();
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='rushmore-ops-blueprint.json';a.click();
 }
 function importJSON(ev){
   const f=ev.target.files[0]; if(!f)return;
@@ -479,13 +441,15 @@ function importJSON(ev){
   r.onload=()=>{try{localStorage.setItem(KEY,r.result);load();render();alert('Map imported.');}catch(e){alert('Could not read that file.');}};
   r.readAsText(f); ev.target.value='';
 }
-function resetAll(){if(confirm('Reset the map to the default Rushmore lifecycle? Your edits will be lost.')){localStorage.removeItem(KEY);load();render();closeDrawer();}}
+function resetAll(){if(confirm('Reset the blueprint to the default Rushmore operating model? Your edits will be lost.')){localStorage.removeItem(KEY);load();render();closeDrawer();}}
 
 /* ---------- util ---------- */
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer();});
 
 load();render();
+/* fit to width on first load */
+(function(){const s=(window.innerWidth-30)/CANVAS_W;scale=Math.min(1,Math.max(.35,s));canvas.style.transform='scale('+scale+')';})();
 </script>
 </body>
 </html>
